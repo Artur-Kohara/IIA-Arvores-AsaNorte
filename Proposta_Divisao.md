@@ -74,7 +74,7 @@ O repositório oficial de dados grandes (imagens e arquivos `.h5`) é:
 ### 🟢 Núcleo 3: Modelagem, Treinamento & Avaliação (Pessoas 7, 8 e 9)
 **Foco:** Treinamento do YOLOv11m na conta única do Kaggle, sintonia de hiperparâmetros, avaliação rigorosa e documentação.
 
-*   **Pessoa 7 (Engenheiro de Treinamento):** Cria o notebook `03_yolo_training.ipynb`. Implementa o download de `dataset_limpo.h5` do Google Drive via `gdown`, a extração rápida das imagens/labels para a memória RAM (`/dev/shm` ou `/tmp`) e inicializa a chamada de treino da biblioteca `ultralytics`.
+*   **Pessoa 7 - Wallysson (Engenheiro de Treinamento):** Cria o notebook `03_yolo_training.ipynb`. Implementa o download de `dataset_limpo.h5` do Google Drive via `gdown`, a extração rápida das imagens/labels para a memória RAM (`/dev/shm` ou `/tmp`) e inicializa a chamada de treino da biblioteca `ultralytics`.
 *   **Pessoa 8 - Celio Eduardo - (Estrategista de Fine-Tuning & Regularização):** Otimiza o script de treino do YOLOv11m. Configura o congelamento das primeiras camadas do backbone (`freeze=10`) para preservar os extratores primitivos de features e define aumentos de dados adequados (rotações de 90° e espelhamentos verticais/horizontais).
 *   **Pessoa 9 (Avaliador Métrico & Git Guard):** Configura a estrutura geral do repositório, assegura a ativação do filtro `nbstripout` nas máquinas locais, garante a padronização de `utils.py`, cria o notebook `04_evaluation.ipynb` para gerar as métricas finais (curva PR, matriz de confusão) e implementa a inferência qualitativa.
 
