@@ -57,7 +57,7 @@ O repositório oficial de dados grandes (imagens e arquivos `.h5`) é:
 **Foco:** Infraestrutura do dado, fatiamento espacial e geração automatizada de caixas delimitadoras.
 
 *   **Pessoa 1 (Coordenador do Pipeline):** Desenvolve o notebook `01_data_pipeline.ipynb`. Implementa o download das ortofotos da IDE-DF e o fatiamento em 640x640 usando `rasterio` e `Window`, garantindo o correto tratamento dos limites espaciais.
-*   **Pessoa 2 (Engenheiro de Formatação):** Desenvolve a conversão eficiente de bandas GeoTIFF RGB para JPEG via OpenCV, organizando as imagens JPG na estrutura inicial do HDF5. Compartilha as funções de conversão e escrita do HDF5 em `utils.py`.
+*   **Pessoa 2 - Rafael de Lima Pereira (Engenheiro de Formatação):** Desenvolve a conversão eficiente de bandas GeoTIFF RGB para JPEG via OpenCV, organizando as imagens JPG na estrutura inicial do HDF5. Compartilha as funções de conversão e escrita do HDF5 em `utils.py`.
 *   **Pessoa 3 (Operador DeepForest):** Desenvolve o notebook `02_pseudo_labelling.ipynb`. Instancia o `DeepForest` (RetinaNet) sobre as imagens do HDF5, extrai os boxes em coordenadas absolutas, faz a normalização de escala e grava as anotações formatadas para o YOLO no arquivo HDF5.
 
 ---
