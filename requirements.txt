@@ -1,0 +1,6 @@
+h5py
+numpy
+opencv-python
+rasterio
+shapely
+pytest
