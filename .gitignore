@@ -14,5 +14,11 @@ data/
 *.tif
 *.tiff
 
+# Exportações geradas para curadoria/upload no Roboflow
+roboflow_export*/
+roboflow_upload/
+roboflow_upload_folder/
+roboflow_upload.zip
+
 # Sistema operacional
 .DS_Store
