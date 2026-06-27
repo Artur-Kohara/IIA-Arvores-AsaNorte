@@ -1,0 +1,24 @@
+# Ambientes virtuais
+.venv/
+venv/
+env/
+
+# Caches Python / pytest
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Dados pesados — política de BACKUP ZERO (ficam só no Google Drive, nunca no Git)
+data/
+*.h5
+*.tif
+*.tiff
+
+# Exportações geradas para curadoria/upload no Roboflow
+roboflow_export*/
+roboflow_upload/
+roboflow_upload_folder/
+roboflow_upload.zip
+
+# Sistema operacional
+.DS_Store
