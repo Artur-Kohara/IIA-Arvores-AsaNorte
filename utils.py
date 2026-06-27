@@ -28,6 +28,67 @@ def carregar_imagem_jpg(img_path):
     img = cv2.imread(img_path)
     return img
 
+def _normalizar_uint8(arr):
+    """
+    Garante que o array esteja em uint8 (0-255). Tiles GeoTIFF podem vir em
+    16 bits; neste caso aplicamos uma normalização min-max para a escala de 8 bits.
+    """
+    if arr.dtype == np.uint8:
+        return arr
+    arr = arr.astype(np.float32)
+    minimo = float(arr.min())
+    maximo = float(arr.max())
+    if maximo - minimo < 1e-9:
+        return np.zeros_like(arr, dtype=np.uint8)
+    arr = (arr - minimo) / (maximo - minimo) * 255.0
+    return arr.astype(np.uint8)
+
+def converter_rgb_para_bgr(img):
+    """
+    Reordena os canais de uma imagem de RGB para BGR (ordem nativa do OpenCV).
+    Aceita tanto o formato HWC (H, W, C) quanto o formato CHW (C, H, W) devolvido
+    pelo rasterio. Descarta o canal alfa (4ª banda) se presente e garante uint8.
+    Implementado por: Pessoa 2
+
+    Retorna array contíguo (H, W, 3) uint8 em ordem BGR.
+    """
+    # Detecta CHW (ex.: (3, 640, 640)) e transpõe para HWC (640, 640, 3)
+    if img.ndim == 3 and img.shape[0] in (3, 4) and img.shape[-1] not in (3, 4):
+        img = np.transpose(img, (1, 2, 0))
+
+    # Mantém apenas as 3 primeiras bandas (descarta alfa, se houver)
+    if img.ndim == 3 and img.shape[-1] > 3:
+        img = img[..., :3]
+
+    # Reordena RGB -> BGR
+    img_bgr = img[..., ::-1]
+    return np.ascontiguousarray(img_bgr, dtype=np.uint8)
+
+def carregar_tile(tile_path):
+    """
+    Carrega um tile gerado pelo fatiamento (Pessoa 1) e devolve um array
+    (640, 640, 3) uint8 em ordem BGR, pronto para gravar no HDF5.
+
+    - Tiles GeoTIFF (.tif/.tiff): lidos com rasterio (RGB, formato CHW),
+      normalizados para uint8 e reordenados para BGR.
+    - Tiles já rasterizados (.jpg/.jpeg/.png): lidos com cv2.imread, que já
+      devolve BGR — não há reordenação adicional.
+
+    Retorna None se a leitura falhar.
+    Implementado por: Pessoa 2
+    """
+    ext = os.path.splitext(str(tile_path))[1].lower()
+
+    if ext in (".tif", ".tiff"):
+        import rasterio  # import lazy: só exigido para tiles GeoTIFF
+        with rasterio.open(tile_path) as src:
+            arr = src.read()  # (bandas, H, W) em ordem RGB
+        arr = _normalizar_uint8(arr)
+        return converter_rgb_para_bgr(arr)
+
+    # JPG/PNG (ou fallback): cv2.imread já retorna BGR
+    return cv2.imread(str(tile_path))
+
 def criar_hdf5_bruto(hdf5_path, image_paths):
     """
     Reordena canais GeoTIFF e grava no formato compilado HDF5 inicial.
@@ -39,9 +100,9 @@ def criar_hdf5_bruto(hdf5_path, image_paths):
         grupo_labels = f.create_group('labels') # Vazio inicialmente
         
         for idx, img_path in enumerate(image_paths):
-            # Carrega a imagem e garante tamanho 640x640x3 do tipo uint8
-            img_data = carregar_imagem_jpg(img_path) 
-            
+            # Carrega o tile, reordena RGB->BGR e garante 640x640x3 uint8
+            img_data = carregar_tile(img_path)
+
             if img_data is None:
                 continue
                 
