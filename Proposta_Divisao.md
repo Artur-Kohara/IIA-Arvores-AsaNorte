@@ -58,16 +58,16 @@ O repositório oficial de dados grandes (imagens e arquivos `.h5`) é:
 
 *   **Pessoa 1 - Luidgi Varela Carneiro (Coordenador do Pipeline):** Desenvolve o notebook `01_data_pipeline.ipynb`. Implementa o download das ortofotos da IDE-DF e o fatiamento em 640x640 usando `rasterio` e `Window`, garantindo o correto tratamento dos limites espaciais.
 *   **Pessoa 2 - Rafael de Lima Pereira (Engenheiro de Formatação):** Desenvolve a conversão eficiente de bandas GeoTIFF RGB para JPEG via OpenCV, organizando as imagens JPG na estrutura inicial do HDF5. Compartilha as funções de conversão e escrita do HDF5 em `utils.py`.
-*   **Pessoa 3 (Operador DeepForest):** Desenvolve o notebook `02_pseudo_labelling.ipynb`. Instancia o `DeepForest` (RetinaNet) sobre as imagens do HDF5, extrai os boxes em coordenadas absolutas, faz a normalização de escala e grava as anotações formatadas para o YOLO no arquivo HDF5.
+*   **Pessoa 3 - Vitor Caldas Danelon Lopes (Operador DeepForest):** Desenvolve o notebook `02_pseudo_labelling.ipynb`. Instancia o `DeepForest` (RetinaNet) sobre as imagens do HDF5, extrai os boxes em coordenadas absolutas, faz a normalização de escala e grava as anotações formatadas para o YOLO no arquivo HDF5.
 
 ---
 
 ### 🟡 Núcleo 2: Curadoria, Controle de Qualidade & Divisão de Dados (Pessoas 4, 5 e 6)
 **Foco:** Refinamento dos dados, eliminação de ruídos das pseudo-labels e estruturação de validação confiável.
 
-*   **Pessoa 4 - Felipe Costa - (Especialista em Anotação):** Configura a plataforma de curadoria (ex: Roboflow ou interface local de inspeção no notebook) para importar as imagens e pseudo-labels do HDF5, coordenando o esforço de limpeza do grupo.
-*   **Pessoa 5 - Lucas Saad - (Revisor de Qualidade):** Executa a revisão manual detalhada, apagando as caixas absurdas geradas pelo DeepForest (ex: sombras, carros, telhados) e adicionando copas de árvores omitidas (falsos negativos).
-*   **Pessoa 6 - Artur Kohara Guerra - (Estrategista de Particionamento):** Divide o HDF5 geograficamente por setores (Asa Norte/Asa Sul) para separar o conjunto de treino e validação, prevenindo vazamento de dados espacial. Gera o arquivo final `dataset_limpo.h5` e o arquivo de configuração `data.yaml`, salvando-os de volta no Google Drive.
+*   **Pessoa 4 - Felipe Costa (Especialista em Anotação):** Configura a plataforma de curadoria (ex: Roboflow ou interface local de inspeção no notebook) para importar as imagens e pseudo-labels do HDF5, coordenando o esforço de limpeza do grupo.
+*   **Pessoa 5 - Lucas Saad (Revisor de Qualidade):** Executa a revisão manual detalhada, apagando as caixas absurdas geradas pelo DeepForest (ex: sombras, carros, telhados) e adicionando copas de árvores omitidas (falsos negativos).
+*   **Pessoa 6 - Artur Kohara Guerra (Estrategista de Particionamento):** Divide o HDF5 geograficamente por setores (Asa Norte/Asa Sul) para separar o conjunto de treino e validação, prevenindo vazamento de dados espacial. Gera o arquivo final `dataset_limpo.h5` e o arquivo de configuração `data.yaml`, salvando-os de volta no Google Drive.
 
 ---
 
@@ -75,8 +75,8 @@ O repositório oficial de dados grandes (imagens e arquivos `.h5`) é:
 **Foco:** Treinamento do YOLOv11m na conta única do Kaggle, sintonia de hiperparâmetros, avaliação rigorosa e documentação.
 
 *   **Pessoa 7 - Wallysson (Engenheiro de Treinamento):** Cria o notebook `03_yolo_training.ipynb`. Implementa o download de `dataset_limpo.h5` do Google Drive via `gdown`, a extração rápida das imagens/labels para a memória RAM (`/dev/shm` ou `/tmp`) e inicializa a chamada de treino da biblioteca `ultralytics`.
-*   **Pessoa 8 - Celio Eduardo - (Estrategista de Fine-Tuning & Regularização):** Otimiza o script de treino do YOLOv11m. Configura o congelamento das primeiras camadas do backbone (`freeze=10`) para preservar os extratores primitivos de features e define aumentos de dados adequados (rotações de 90° e espelhamentos verticais/horizontais).
-*   **Pessoa 9 (Avaliador Métrico & Git Guard):** Configura a estrutura geral do repositório, assegura a ativação do filtro `nbstripout` nas máquinas locais, garante a padronização de `utils.py`, cria o notebook `04_evaluation.ipynb` para gerar as métricas finais (curva PR, matriz de confusão) e implementa a inferência qualitativa.
+*   **Pessoa 8 - Celio Eduardo (Estrategista de Fine-Tuning & Regularização):** Otimiza o script de treino do YOLOv11m. Configura o congelamento das primeiras camadas do backbone (`freeze=10`) para preservar os extratores primitivos de features e define aumentos de dados adequados (rotações de 90° e espelhamentos verticais/horizontais).
+*   **Pessoa 9 - Arthur Menezes Botelho (Avaliador Métrico & Git Guard):** Configura a estrutura geral do repositório, assegura a ativação do filtro `nbstripout` nas máquinas locais, garante a padronização de `utils.py`, cria o notebook `04_evaluation.ipynb` para gerar as métricas finais (curva PR, matriz de confusão) e implementa a inferência qualitativa.
 
 ---
 

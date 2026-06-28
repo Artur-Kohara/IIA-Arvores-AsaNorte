@@ -16,3 +16,6 @@ data/
 
 # Sistema operacional
 .DS_Store
+data/
+*.tif
+*.tiff
