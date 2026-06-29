@@ -44,44 +44,10 @@ import utils
 ```
 
 ### 2. Fase 1: Data Pipeline & Slicing (Pessoa 1 - Luidgi Varela)
-Divide a imagem GeoTIFF em tiles georreferenciados de 640x640 pixels.
+O fatiamento espacial é importado e executado diretamente a partir de `utils.py` usando `utils.slice_geotiff`.
 ```python
-import rasterio
-from rasterio.windows import Window
-
-def slice_geotiff_local(input_path, output_dir, tile_size=640):
-    input_path = Path(input_path)
-    output_dir = Path(output_dir)
-    if not input_path.exists():
-        raise FileNotFoundError(f"GeoTIFF não encontrado: {input_path}")
-    
-    output_dir.mkdir(parents=True, exist_ok=True)
-    generated_tiles = []
-    
-    with rasterio.open(input_path) as src:
-        meta = src.meta.copy()
-        img_width = src.width
-        img_height = src.height
-        
-        for row_off in range(0, img_height - tile_size + 1, tile_size):
-            for col_off in range(0, img_width - tile_size + 1, tile_size):
-                window = Window(col_off=col_off, row_off=row_off, width=tile_size, height=tile_size)
-                tile_transform = rasterio.windows.transform(window, src.transform)
-                
-                tile_meta = meta.copy()
-                tile_meta.update({
-                    "height": tile_size,
-                    "width": tile_size,
-                    "transform": tile_transform
-                })
-                
-                tile_name = f"{input_path.stem}_tile_{row_off}_{col_off}.tif"
-                output_path = output_dir / tile_name
-                
-                with rasterio.open(output_path, "w", **tile_meta) as dst:
-                    dst.write(src.read(window=window))
-                generated_tiles.append(output_path)
-    return generated_tiles
+# O fatiamento espacial agora é importado de utils.py (Pessoa 1)
+# utils.slice_geotiff(input_path, output_dir, tile_size=640)
 ```
 
 ### 3. Fase 1: Conversão Cromática e HDF5 Bruto (Pessoa 2 - Rafael Lima)
