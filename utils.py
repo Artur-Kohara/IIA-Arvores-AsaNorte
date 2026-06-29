@@ -366,6 +366,77 @@ def create_geographical_split(mapping_csv):
         train_sectors,
     )
 
+def create_hdf5_subset(
+    input_hdf5,
+    output_hdf5,
+    tile_names,
+    mapping_df=None,
+    subset_name=None,
+):
+    """
+    Cria um novo HDF5 contendo apenas os tiles especificados.
+
+    Parameters
+    ----------
+    input_hdf5 : str | Path
+
+    output_hdf5 : str | Path
+
+    tile_names : list[str]
+
+    mapping_df : pandas.DataFrame | None
+
+    subset_name : str | None
+        Ex.: "train" ou "validation"
+    """
+
+    input_hdf5 = Path(input_hdf5)
+    output_hdf5 = Path(output_hdf5)
+
+    with h5py.File(input_hdf5, "r") as src:
+
+        with h5py.File(output_hdf5, "w") as dst:
+
+            dst.create_group("images")
+            dst.create_group("labels")
+
+            for tile in tile_names:
+
+                src.copy(
+                    src["images"][tile],
+                    dst["images"],
+                    name=tile,
+                )
+
+                src.copy(
+                    src["labels"][tile],
+                    dst["labels"],
+                    name=tile,
+                )
+
+            # Metadados
+
+            dst.attrs["source_dataset"] = input_hdf5.name
+
+            dst.attrs["total_tiles"] = len(tile_names)
+
+            if subset_name is not None:
+                dst.attrs["subset"] = subset_name
+
+            if mapping_df is not None:
+
+                subset_df = mapping_df[
+                    mapping_df["tile_hdf5"].isin(tile_names)
+                ]
+
+                sectors = sorted(
+                    subset_df["sector"].unique()
+                )
+
+                dst.attrs["sectors"] = ",".join(sectors)
+
+    return output_hdf5
+
 # =====================================================================
 # NÚCLEO 3: MODELAGEM, TREINAMENTO & AVALIAÇÃO
 # =====================================================================
