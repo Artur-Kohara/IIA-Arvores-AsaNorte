@@ -2,6 +2,8 @@
 
 Projeto 2 da disciplina de Introdução à Inteligência Artificial do Departamento de Ciência da Computação (CIC) da Universidade de Brasília (UnB).
 
+Link Kaggle: [YoloV11 - Tree Asa Norte | Kaggle](https://www.kaggle.com/code/clioeduardo/yolov11-tree-asa-norte)
+
 ## Fase 1 - Data pipeline
 
 O notebook `notebooks/01_data_pipeline.ipynb` implementa a etapa da Pessoa 1 para as ortofotos da Asa Norte:
