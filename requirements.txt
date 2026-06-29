@@ -4,3 +4,4 @@ opencv-python
 rasterio
 shapely
 pytest
+pandas

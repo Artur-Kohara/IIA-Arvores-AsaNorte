@@ -3,6 +3,8 @@ import zipfile
 import cv2
 import h5py
 import numpy as np
+import pandas as pd
+from pathlib import Path
 
 """
 utils.py - Funções utilitárias compartilhadas do projeto projeto2-iia.
@@ -258,6 +260,111 @@ def exportar_hdf5_para_roboflow(hdf5_path, output_dir):
         "zip_path": zip_path,
     }
 
+def load_tile_mapping(mapping_csv):
+    """
+    Carrega o arquivo tile_mapping.csv.
+
+    Parameters
+    ----------
+    mapping_csv : str ou Path
+
+    Returns
+    -------
+    pandas.DataFrame
+    """
+
+    mapping_csv = Path(mapping_csv)
+
+    if not mapping_csv.exists():
+        raise FileNotFoundError(
+            f"Arquivo não encontrado: {mapping_csv}"
+        )
+
+    mapping = pd.read_csv(mapping_csv)
+
+    expected_columns = {
+        "tile_hdf5",
+        "sector",
+        "tile_filename",
+    }
+
+    missing = expected_columns.difference(mapping.columns)
+
+    if missing:
+        raise ValueError(
+            f"O CSV não possui as colunas obrigatórias: {missing}"
+        )
+
+    return mapping
+
+def split_tiles_by_sector(
+    mapping,
+    train_sectors,
+):
+    """
+    Divide os tiles em treino e validação utilizando setores
+    geográficos.
+
+    Parameters
+    ----------
+    mapping : pandas.DataFrame
+
+    train_sectors : list[str]
+
+    Returns
+    -------
+    train_tiles : list[str]
+
+    val_tiles : list[str]
+    """
+
+    train = mapping[
+        mapping["sector"].isin(train_sectors)
+    ]
+
+    val = mapping[
+        ~mapping["sector"].isin(train_sectors)
+    ]
+
+    train_tiles = train["tile_hdf5"].tolist()
+
+    val_tiles = val["tile_hdf5"].tolist()
+
+    return train_tiles, val_tiles
+
+def create_geographical_split(mapping_csv):
+    """
+    Cria automaticamente a divisão geográfica.
+
+    Treino:
+        setor_01
+        setor_02
+        setor_03
+        setor_04
+
+    Validação:
+        setor_05
+        setor_06
+    """
+
+    mapping = load_tile_mapping(mapping_csv)
+
+    train_sectors = [
+
+        "asa_norte_setor_01",
+
+        "asa_norte_setor_02",
+
+        "asa_norte_setor_03",
+
+        "asa_norte_setor_04",
+
+    ]
+
+    return split_tiles_by_sector(
+        mapping,
+        train_sectors,
+    )
 
 # =====================================================================
 # NÚCLEO 3: MODELAGEM, TREINAMENTO & AVALIAÇÃO
