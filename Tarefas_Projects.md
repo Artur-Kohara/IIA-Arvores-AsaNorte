@@ -126,13 +126,15 @@ projeto2-iia/
 │   ├── 01_data_pipeline.ipynb
 │   ├── 02_pseudo_labelling.ipynb
 │   ├── 03_yolo_training.ipynb
-│   └── 04_evaluation.ipynb
+│   ├── 04_evaluation.ipynb
+│   └── notebook_integrador.ipynb <-- Notebook unificado integrando todo o pipeline
 ├── tests/
 │   ├── test_slicing.py           <-- Valida scripts da Pessoa 1
 │   ├── test_chromatic.py         <-- Valida scripts da Pessoa 2
 │   ├── test_hdf5.py              <-- Valida a integridade do HDF5 (Pessoas 2, 3 e 6)
 │   ├── test_yolo_format.py       <-- Valida conversão YOLO (Pessoa 3)
 │   └── test_ram_disk.py          <-- Valida extração em RAM (Pessoa 7)
+├── notebook_integrador.md        <-- Walkthrough e documentação do notebook integrador
 ├── utils.py                      <-- Contém toda a lógica codificada do projeto
 └── requirements.txt
 ```
@@ -175,7 +177,19 @@ jobs:
 
 ---
 
-## 👥 4. Mapeamento de Cartões do GitHub Projects (Tarefas Individuais)
+## 🚀 4. A Estratégia do Notebook Integrador (Foco em Integração Contínua)
+
+Para mitigar problemas de acoplamento e garantir que os entregáveis de cada fase converjam sem quebrar o fluxo geral, adotamos o [notebook_integrador.ipynb](file:///C:/Users/Eduardo/Documents/GitHub/IIA-Arvores-AsaNorte/notebooks/notebook_integrador.ipynb) na branch `dev` (cujo walkthrough e documentação estão em [notebook_integrador.md](file:///C:/Users/Eduardo/Documents/GitHub/IIA-Arvores-AsaNorte/notebook_integrador.md)).
+
+### Diretrizes de Trabalho no Integrador:
+1. **Mocks Iniciais:** Todas as etapas subsequentes à Fase 2 (curadoria, particionamento, carregamento em RAM, treino e avaliação) começam com **código simulado (mocks)** funcionais no notebook.
+2. **Substituição de Mocks:** Quando um integrante finalizar sua tarefa específica, ele deve criar um PR para a branch `dev` e **atualizar a respectiva seção do notebook integrador** com o código real, substituindo o mock correspondente.
+3. **Validação do Fluxo:** O integrante deve executar o notebook integrador por completo, garantindo que o seu novo código consuma perfeitamente os dados gerados pela etapa anterior e forneça os insumos corretos para a etapa seguinte.
+4. **Alinhamento TDD:** Os testes unitários associados a cada etapa devem ser atualizados e validados com `pytest` localmente antes do merge.
+
+---
+
+## 👥 5. Mapeamento de Cartões do GitHub Projects (Tarefas Individuais)
 
 O quadro do GitHub Projects terá as seguintes colunas:
 `Backlog` ➔ `A Fazer` ➔ `Em Progresso` ➔ `QA & Testes` ➔ `Revisão de Código` ➔ `Concluído`

@@ -30,24 +30,26 @@ O repositório oficial de dados grandes (imagens e arquivos `.h5`) é:
 
 ## 🗺️ Fluxo de Trabalho Integrado e Acoplado
 
-1. **Núcleo 1 (Engenharia de Dados):**
-   - Baixa GeoTIFFs da IDE-DF diretamente na pasta temporária `/tmp` do Kaggle.
-   - Fatia em 640x640, converte TIFF -> JPG (reordenando bandas RGB/BGR) e cria o arquivo compilado `dataset.h5` no Google Drive.
-   - Executa o DeepForest nas imagens do HDF5 e insere as pseudo-labels no próprio arquivo HDF5.
-   - *Entregáveis Git:* `01_data_pipeline.ipynb`, `02_pseudo_labelling.ipynb`, e funções de dados no `utils.py`.
+Para evitar falhas de integração e garantir que o código de cada integrante funcione como insumo direto para o próximo, o desenvolvimento será unificado e testado através de um **único notebook de fluxo completo**: o `notebooks/notebook_integrador.ipynb` (descrito em [notebook_integrador.md](file:///C:/Users/Eduardo/Documents/GitHub/IIA-Arvores-AsaNorte/notebook_integrador.md)) na branch `dev`. 
 
-2. **Núcleo 2 (Curadoria & QA):**
-   - Baixa o `dataset.h5` do Google Drive, visualiza e limpa as caixas no Roboflow ou via notebook local.
-   - Corrige falsos positivos (ex: caixas em telhados) e falsos negativos.
-   - Divide o dataset geograficamente (evitando *spatial data leakage*) e cria o dataset final consolidado no Google Drive como `dataset_limpo.h5` com seu respectivo `data.yaml`.
-   - *Entregáveis Git:* Scripts de curadoria em `utils.py`.
+As partes não implementadas de cada fase serão simuladas com **mocks** temporários para que o fluxo de ponta a ponta execute sem falhas. Cada integrante, ao completar sua tarefa, deve substituir o respectivo mock pelo seu código de produção.
 
-3. **Núcleo 3 (Modelagem & Treinamento):**
-   - Baixa o `dataset_limpo.h5` do Google Drive na sessão única do Kaggle.
-   - Extrai o HDF5 instantaneamente na memória RAM (`/dev/shm/dataset` ou `/tmp`) estruturado em subpastas YOLO.
-   - Treina o YOLOv11m utilizando Transfer Learning (congelando o backbone nas primeiras 10 épocas) e augmentations de rotação/espelhamento.
-   - Avalia estatisticamente (curvas ROC, PR, EER) e gera inferências visuais de controle.
-   - *Entregáveis Git:* `03_yolo_training.ipynb`, `04_evaluation.ipynb`, e funções de plotagem/inferência em `utils.py`.
+1. **Núcleo 1 (Engenharia de Dados) - Fases 1 e 2:**
+   - Baixa GeoTIFFs da IDE-DF, fatia em 640x640, converte TIFF -> JPG (RGB -> BGR) e cria o arquivo compilado `dataset_v1_raw.h5` no Google Drive.
+   - Executa o DeepForest nas imagens do HDF5 e insere as pseudo-labels no próprio HDF5.
+   - *Seção do Integrador:* Seções 1, 2 e 3 do `notebooks/notebook_integrador.ipynb` e respectivos métodos em [utils.py](file:///C:/Users/Eduardo/Documents/GitHub/IIA-Arvores-AsaNorte/utils.py).
+
+2. **Núcleo 2 (Curadoria & QA) - Fase 2:**
+   - Exporta o HDF5 bruto para um `.zip` padrão YOLO, faz o upload no Roboflow para curadoria manual e baixa as anotações revisadas.
+   - Divide o dataset geograficamente (Asa Norte/Asa Sul) e cria os datasets consolidados `dataset_treino.h5`, `dataset_val.h5` e `data.yaml`.
+   - *Seção do Integrador:* Seções 4, 5 e 6 do `notebooks/notebook_integrador.ipynb` e respectivos métodos em [utils.py](file:///C:/Users/Eduardo/Documents/GitHub/IIA-Arvores-AsaNorte/utils.py).
+
+3. **Núcleo 3 (Modelagem & Treinamento) - Fases 3 e 4:**
+   - Baixa os HDF5s curados na sessão única do Kaggle e extrai instantaneamente na RAM (`/dev/shm`).
+   - Configura e executa o fine-tuning do YOLOv11m (com congelamento do backbone e aumentos de dados).
+   - Avalia estatisticamente (curvas Precision-Recall, matriz de confusão) e plota gráficos.
+   - *Seção do Integrador:* Seções 7, 8 e 9 do `notebooks/notebook_integrador.ipynb` e respectivos métodos em [utils.py](file:///C:/Users/Eduardo/Documents/GitHub/IIA-Arvores-AsaNorte/utils.py).
+
 
 ---
 
