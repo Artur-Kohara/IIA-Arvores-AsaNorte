@@ -18,8 +18,56 @@ def slice_geotiff(input_path, output_dir, tile_size=640):
     Fatia uma ortofoto GeoTIFF em blocos (tiles) de tamanho tile_size x tile_size.
     Implementado por: Pessoa 1
     """
-    # TODO: Implementar fatiamento usando a biblioteca rasterio e Window.
-    pass
+    import rasterio
+    from rasterio.windows import Window
+    from pathlib import Path
+
+    input_path = Path(input_path)
+    output_dir = Path(output_dir)
+
+    if tile_size <= 0:
+        raise ValueError("tile_size deve ser um inteiro positivo.")
+
+    if not input_path.exists():
+        raise FileNotFoundError(f"Arquivo GeoTIFF nao encontrado: {input_path}")
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+    generated_tiles = []
+
+    with rasterio.open(input_path) as src:
+        meta = src.meta.copy()
+        img_width = src.width
+        img_height = src.height
+
+        # Ignora bordas menores que o tile_size
+        for row_off in range(0, img_height - tile_size + 1, tile_size):
+            for col_off in range(0, img_width - tile_size + 1, tile_size):
+                window = Window(
+                    col_off=col_off,
+                    row_off=row_off,
+                    width=tile_size,
+                    height=tile_size,
+                )
+                tile_transform = rasterio.windows.transform(window, src.transform)
+
+                tile_meta = meta.copy()
+                tile_meta.update(
+                    {
+                        "height": tile_size,
+                        "width": tile_size,
+                        "transform": tile_transform,
+                    }
+                )
+
+                tile_name = f"{input_path.stem}_tile_{row_off}_{col_off}.tif"
+                output_path = output_dir / tile_name
+
+                with rasterio.open(output_path, "w", **tile_meta) as dst:
+                    dst.write(src.read(window=window))
+
+                generated_tiles.append(output_path)
+
+    return generated_tiles
 
 def carregar_imagem_jpg(img_path):
     """
