@@ -2,3 +2,7 @@
 data/
 *.tif
 *.tiff
+__pycache__/
+*.pyc
+*.pyo
+*.pyd

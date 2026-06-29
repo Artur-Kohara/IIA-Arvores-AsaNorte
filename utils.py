@@ -3,6 +3,8 @@ import zipfile
 import cv2
 import h5py
 import numpy as np
+import pandas as pd
+from pathlib import Path
 
 """
 utils.py - Funções utilitárias compartilhadas do projeto projeto2-iia.
@@ -258,6 +260,182 @@ def exportar_hdf5_para_roboflow(hdf5_path, output_dir):
         "zip_path": zip_path,
     }
 
+def load_tile_mapping(mapping_csv):
+    """
+    Carrega o arquivo tile_mapping.csv.
+
+    Parameters
+    ----------
+    mapping_csv : str ou Path
+
+    Returns
+    -------
+    pandas.DataFrame
+    """
+
+    mapping_csv = Path(mapping_csv)
+
+    if not mapping_csv.exists():
+        raise FileNotFoundError(
+            f"Arquivo não encontrado: {mapping_csv}"
+        )
+
+    mapping = pd.read_csv(mapping_csv)
+
+    expected_columns = {
+        "tile_hdf5",
+        "sector",
+        "tile_filename",
+    }
+
+    missing = expected_columns.difference(mapping.columns)
+
+    if missing:
+        raise ValueError(
+            f"O CSV não possui as colunas obrigatórias: {missing}"
+        )
+
+    return mapping
+
+def split_tiles_by_sector(
+    mapping,
+    train_sectors,
+):
+    """
+    Divide os tiles em treino e validação utilizando setores
+    geográficos.
+
+    Parameters
+    ----------
+    mapping : pandas.DataFrame
+
+    train_sectors : list[str]
+
+    Returns
+    -------
+    train_tiles : list[str]
+
+    val_tiles : list[str]
+    """
+
+    train = mapping[
+        mapping["sector"].isin(train_sectors)
+    ]
+
+    val = mapping[
+        ~mapping["sector"].isin(train_sectors)
+    ]
+
+    train_tiles = train["tile_hdf5"].tolist()
+
+    val_tiles = val["tile_hdf5"].tolist()
+
+    return train_tiles, val_tiles
+
+def create_geographical_split(mapping_csv):
+    """
+    Cria automaticamente a divisão geográfica.
+
+    Treino:
+        setor_01
+        setor_02
+        setor_03
+        setor_04
+
+    Validação:
+        setor_05
+        setor_06
+    """
+
+    mapping = load_tile_mapping(mapping_csv)
+
+    train_sectors = [
+
+        "asa_norte_setor_01",
+
+        "asa_norte_setor_02",
+
+        "asa_norte_setor_03",
+
+        "asa_norte_setor_04",
+
+    ]
+
+    return split_tiles_by_sector(
+        mapping,
+        train_sectors,
+    )
+
+def create_hdf5_subset(
+    input_hdf5,
+    output_hdf5,
+    tile_names,
+    mapping_df=None,
+    subset_name=None,
+):
+    """
+    Cria um novo HDF5 contendo apenas os tiles especificados.
+
+    Parameters
+    ----------
+    input_hdf5 : str | Path
+
+    output_hdf5 : str | Path
+
+    tile_names : list[str]
+
+    mapping_df : pandas.DataFrame | None
+
+    subset_name : str | None
+        Ex.: "train" ou "validation"
+    """
+
+    input_hdf5 = Path(input_hdf5)
+    output_hdf5 = Path(output_hdf5)
+
+    with h5py.File(input_hdf5, "r") as src:
+
+        with h5py.File(output_hdf5, "w") as dst:
+
+            dst.create_group("images")
+            dst.create_group("labels")
+
+            for tile in tile_names:
+
+                src.copy(
+                    src["images"][tile],
+                    dst["images"],
+                    name=tile,
+                )
+
+                src.copy(
+                    src["labels"][tile],
+                    dst["labels"],
+                    name=tile,
+                )
+
+            # Metadados
+
+            dst.attrs["source_dataset"] = input_hdf5.name
+
+            dst.attrs["total_tiles"] = len(tile_names)
+
+            if subset_name is not None:
+                dst.attrs["subset"] = subset_name
+
+            if mapping_df is not None:
+
+                subset_df = mapping_df[
+                    mapping_df["tile_hdf5"].isin(tile_names)
+                ]
+
+                sectors = sorted(
+                    subset_df["sector"].unique()
+                )
+
+                dst.attrs["sectors"] = ",".join(sectors)
+
+    return output_hdf5
 
 # =====================================================================
 # NÚCLEO 3: MODELAGEM, TREINAMENTO & AVALIAÇÃO
