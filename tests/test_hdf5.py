@@ -1,6 +1,16 @@
+import sys
+from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+
+sys.path.insert(0, str(PROJECT_ROOT))
+
 import pytest
 import h5py
 import numpy as np
+
+from utils import load_tile_mapping
+from utils import create_geographical_split
 
 """
 tests/test_hdf5.py
@@ -24,8 +34,34 @@ def test_geographical_split():
     as mesmas coordenadas espaciais que as imagens de validação.
     """
     # Simula dados espaciais de treino e validação
-    mock_train_coords = [(15.70, 47.90), (15.71, 47.91)]
-    mock_val_coords = [(15.80, 47.80), (15.81, 47.81)]
-    
-    intersection = set(mock_train_coords).intersection(set(mock_val_coords))
-    assert len(intersection) == 0, "Detetado vazamento espacial de treino e validação!"
+    train_tiles, val_tiles = create_geographical_split(
+        "data/tile_mapping.csv"
+    )
+
+    assert len(set(train_tiles) & set(val_tiles)) == 0
+
+def test_all_tiles_used():
+
+    mapping = load_tile_mapping("data/tile_mapping.csv")
+
+    train_tiles, val_tiles = create_geographical_split(
+        "data/tile_mapping.csv"
+    )
+
+    assert len(train_tiles) + len(val_tiles) == len(mapping)
+
+def test_sectors():
+
+    mapping = load_tile_mapping("data/tile_mapping.csv")
+
+    train_tiles, val_tiles = create_geographical_split(
+        "data/tile_mapping.csv"
+    )
+
+    train_mapping = mapping[mapping.tile_name.isin(train_tiles)]
+    val_mapping = mapping[mapping.tile_name.isin(val_tiles)]
+
+    train_sectors = set(train_mapping["sector"])
+    val_sectors = set(val_mapping["sector"])
+
+    assert train_sectors.isdisjoint(val_sectors)
